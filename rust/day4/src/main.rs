@@ -1,56 +1,63 @@
-use std::borrow::BorrowMut;
-use std::fs;
-use std::ops::Deref;
-
-fn transpose<T>(v: Vec<Vec<T>>) -> Vec<Vec<T>>
-    where
-        T: Clone,
-{
-    assert!(!v.is_empty());
-    (0..v[0].len())
-        .map(|i| v.iter().map(|inner| inner[i].clone()).collect::<Vec<T>>())
-        .collect()
-}
-
+use std::collections::HashMap;
 
 fn main() {
-    let content = fs::read_to_string("../../inputs/day4.test.txt").unwrap();
-    let lines: Vec<&str> = content.split("\n").collect();
-    let mut numbers: Vec<u32> = lines
-        .first().unwrap()
-        .split(",")
-        .filter(|s| !s.is_empty())
-        .map(|n| n.parse::<u32>().unwrap())
+    let content = include_str!("../../../inputs/day4.txt");
+    let (roll_str, boards_str) = content.split_once("\n\n").unwrap();
+    let roll: Vec<u32> = roll_str.split(",").map(|n| n.parse().unwrap()).collect();
+    let boards: Vec<HashMap<(usize, usize), u32>> = boards_str
+        .split("\n\n")
+        .map(|bs| bs
+            .lines()
+            .enumerate()
+            .map(|(i, row)| row
+                .split_whitespace()
+                .enumerate()
+                .map(|(j, n)| ((i, j), n.parse::<u32>().unwrap()))
+                .collect::<Vec<((usize, usize), u32)>>()
+            )
+            .flatten()
+            .collect()
+        )
         .collect();
-    let mut boards: Vec<Vec<Vec<u32>>> = (0..(lines.len() - 1) / 6)
-        .map(|i| {
-            let mut rows: Vec<Vec<u32>> = lines[i * 6 + 2..i * 6 + 7].iter()
-                .map(|l|
-                    l
-                        .split_whitespace()
-                        .map(|s| s.parse().unwrap())
-                        .collect::<Vec<u32>>())
-                .collect();
-            let mut cols = transpose(rows.clone());
-            rows.append(&mut cols);
-            rows
-        })
-        .collect();
+    let mut marks: Vec<HashMap<(usize, usize), u8>> = boards.clone().iter()
+        .map(|e| e.iter().map(|(key, _)| (key.clone(), 0)).collect()).collect();
 
-    let mut flag = false;
-    numbers.reverse();
-    while let Some(n) = numbers.pop() {
-        println!("popped {:?}", n);
-
-        boards.iter_mut().for_each(|mut board|
-            board = &mut board.iter_mut()
-                .map(|mut list| {
-                    list = &mut list.iter().filter(|x| **x == n).map(|x| *x).collect::<Vec<u32>>();
-                    if list.is_empty() { flag = true }
-                    list
-                })
-                .collect()
-        );
-        if flag { break; }
+    let mut out = vec![];
+    for n in roll {
+        boards.iter().enumerate()
+            .for_each(|(i, b)|
+                if !out.contains(&i) {
+                    b.iter()
+                        .for_each(|(k, v)| if *v == n {
+                            *marks[i].get_mut(k).unwrap() = 1;
+                        })
+                }
+            );
+        for (i, m) in marks.iter().enumerate() {
+            if out.contains(&i) {continue;}
+            let keys: Vec<(usize, usize)> = m.iter().filter(|(k, v)| **v == 1).map(|(k, _)| *k).collect();
+            let rows = keys.clone().iter().fold(vec![0; 5], |mut acc, v| {
+                acc[(*v).0] += 1;
+                acc
+            });
+            let cols = keys.clone().iter().fold(vec![0; 5], |mut acc, v| {
+                acc[(*v).1] += 1;
+                acc
+            });
+            if rows.iter().any(|s| (*s) == 5) || cols.iter().any(|s| (*s) == 5) {
+                println!(
+                    "{} board has finished (n={}): {} ({:?})",
+                    i,
+                    n,
+                    (n as u32) * boards[i].iter().map(|(k, v)|
+                        if *m.get(k).unwrap() == 0 { *v as u32 } else { 0 }
+                    ).sum::<u32>(),
+                    boards[i].iter().map(|(k, v)|
+                        if *m.get(k).unwrap() == 0 { *v as u32 } else { 0 }
+                    ).sum::<u32>()
+                );
+                out.push(i);
+            }
+        }
     }
 }
