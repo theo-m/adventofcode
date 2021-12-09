@@ -13,7 +13,7 @@ fn main() {
         "abcdefg".chars().filter(|c| !v.contains(c)).collect()
     }
 
-    let displays = include_str!("../../../inputs/day8.test.txt")
+    let displays = include_str!("day8.test.txt")
         .lines()
         .map(|lin| {
             let (left, right) = lin.split_once(" | ").unwrap();

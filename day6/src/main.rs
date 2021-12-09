@@ -1,5 +1,5 @@
 fn main1() {
-    let mut fishies = include_str!("../../../inputs/day6.txt")
+    let mut fishies = include_str!("day6.txt")
         .split_once("\n").unwrap().0
         .split(",").map(|ns| ns.parse().unwrap())
         .collect::<Vec<u32>>();
@@ -19,7 +19,7 @@ fn main1() {
 }
 
 fn main() {
-    let fishies = include_str!("../../../inputs/day6.txt")
+    let fishies = include_str!("day6.txt")
         .split_once("\n").unwrap().0
         .split(",").map(|ns| ns.parse().unwrap())
         .collect::<Vec<u32>>();

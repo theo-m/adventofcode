@@ -11,7 +11,7 @@ fn neighbors(w: usize, h: usize, i: usize, j: usize) -> Vec<(usize, usize)> {
 }
 
 fn input() -> Vec<Vec<u8>> {
-    include_str!("../../../inputs/day9.test.txt")
+    include_str!("../../inputs/day9.test.txt")
         .lines()
         .map(|line|
             line.trim().split("")

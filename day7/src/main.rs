@@ -1,5 +1,5 @@
 fn main2() {
-    let mut n = include_str!("./../../../inputs/day7.txt")
+    let mut n = include_str!("day7.txt")
         .split(",")
         .map(|s| s.parse().unwrap())
         .collect::<Vec<i32>>();
@@ -9,7 +9,7 @@ fn main2() {
 }
 
 fn main() {
-    let n = include_str!("./../../../inputs/day7.txt")
+    let n = include_str!("day7.txt")
         .split(",")
         .map(|s| s.parse().unwrap())
         .collect::<Vec<_>>();

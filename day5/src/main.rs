@@ -1,5 +1,5 @@
 fn main() {
-    let str = include_str!("../../../inputs/day5.txt");
+    let str = include_str!("day5.txt");
     let mut overlaps = 0;
     let count = str.lines()
         .map(|l| {

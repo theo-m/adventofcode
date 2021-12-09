@@ -45,7 +45,7 @@ impl FromStr for Move {
 }
 
 fn main() {
-    let content = fs::read_to_string("../../inputs/day2.txt").unwrap();
+    let content = fs::read_to_string("day2.txt").unwrap();
     let moves: Vec<Move> = content.split("\n")
         .filter(|line| !line.trim().is_empty())
         .map(|line| line.trim().parse::<Move>().unwrap())

@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 fn main() {
-    let content = include_str!("../../../inputs/day4.txt");
+    let content = include_str!("day4.txt");
     let (roll_str, boards_str) = content.split_once("\n\n").unwrap();
     let roll: Vec<u32> = roll_str.split(",").map(|n| n.parse().unwrap()).collect();
     let boards: Vec<HashMap<(usize, usize), u32>> = boards_str

@@ -19,7 +19,7 @@ fn to_u32(n: Vec<u8>) -> u32 {
 }
 
 fn main() {
-    let content = fs::read_to_string("../../inputs/day3.txt").unwrap();
+    let content = fs::read_to_string("day3.txt").unwrap();
     let numbers: Vec<Vec<u8>> = content.split("\n")
         .filter(|line| !line.trim().is_empty())
         .map(|line|

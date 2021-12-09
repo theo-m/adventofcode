@@ -2,7 +2,7 @@ use std::fs;
 use std::path::Iter;
 
 fn main() {
-    let content = fs::read_to_string("../../inputs/day1.txt").unwrap();
+    let content = fs::read_to_string("day1.txt").unwrap();
     let sonar_readings: Vec<u32> = content.split("\n")
         .map(|it| if !it.trim().is_empty() { Some(it.trim().parse::<u32>().unwrap()) } else { None })
         .filter(|it| !it.is_none())
