@@ -10,17 +10,22 @@ fn neighbors(w: usize, h: usize, i: usize, j: usize) -> Vec<(usize, usize)> {
     ].iter().filter_map(|x| *x).collect()
 }
 
-fn part1() {
-    let m: Vec<Vec<u8>> = include_str!("../../../inputs/day9.2.txt")
+fn input() -> Vec<Vec<u8>> {
+    include_str!("../../../inputs/day9.test.txt")
         .lines()
         .map(|line|
             line.trim().split("")
                 .filter(|s| !s.is_empty())
                 .map(|s| s.parse::<u8>().unwrap())
                 .collect())
-        .collect();
-    let mut lows = vec![];
+        .collect()
+}
+
+fn part1() {
+    let m = input();
     let (w, h) = (m.len(), m[0].len());
+
+    let mut lows = vec![];
     (0..w).for_each(|i| (0..h).for_each(|j| {
         let mut neighbors = vec![
             &m[i][j],
@@ -34,19 +39,11 @@ fn part1() {
             lows.push((m[i][j], (i, j)));
         }
     }));
-    println!("{:?}", lows.iter().map(|(_, pos)| pos).collect::<Vec<_>>());
-    println!("{:?}", lows.iter().map(|(x, _)| 1 + *x as u32).sum::<u32>());
+    println!("part1: {:?}", lows.iter().map(|(x, _)| 1 + *x as u32).sum::<u32>());
 }
 
-fn main() {
-    let m: Vec<Vec<u8>> = include_str!("../../../inputs/day9.txt")
-        .lines()
-        .map(|line|
-            line.trim().split("")
-                .filter(|s| !s.is_empty())
-                .map(|s| s.parse::<u8>().unwrap())
-                .collect())
-        .collect();
+fn part2() {
+    let m = input();
     let (w, h) = (m.len(), m[0].len());
 
     let mut basins = HashMap::new();
@@ -55,32 +52,34 @@ fn main() {
         .enumerate()
         .filter_map(|(i, d)| if *d == 9 { None } else { Some((i / h, i % h)) })
         .for_each(|(x, y)| {
-            let ns = neighbors(w, h, x, y);
-            let reprs = ns.iter()
-                .filter_map(|pos| {
-                    let b = basins.clone();
-                    b.get(pos).and_then(|n: &usize| Some((*pos, n.clone())))
-                })
+            let reprs = neighbors(w, h, x, y).iter()
+                .filter_map(|pos| basins.clone().get(pos).and_then(|n: &usize| Some((*pos, n.clone()))))
                 .collect::<Vec<((usize, usize), usize)>>();
 
             if reprs.is_empty() {
-                basins.insert((x, y), (x + h * y));
+                basins.insert((x, y), x * h + y);
             } else {
-                let repr = reprs[0].1.clone();
-                reprs.clone().iter().for_each(|(key, _)| { *basins.get_mut(key).unwrap() = repr; });
+                let (_, repr) = reprs[0];
+                reprs.iter().for_each(|(key, _)| { *basins.get_mut(key).unwrap() = repr; });
                 basins.insert((x, y), repr);
             }
         });
-    let mut basin_size = basins.iter().fold(HashMap::<usize, Vec<(usize, usize)>>::new(), |mut acc, (pos, repr)| {
-        if let Some(v) = acc.get_mut(repr) {
-            v.push(*pos)
-        } else {
-            acc.insert(*repr, vec![*pos]);
-        }
-        acc
-    }).iter().map(|b| b.1.len()).collect::<Vec<_>>();
+
+    let mut basin_size = basins.iter()
+        .fold(HashMap::<usize, Vec<(usize, usize)>>::new(), |mut acc, (pos, repr)| {
+            acc.entry(*repr).or_insert(vec![]).push(*pos);
+            acc
+        }).iter()
+        .map(|(_repr, group)| group.len())
+        .collect::<Vec<_>>();
     basin_size.sort();
     basin_size.reverse();
-    println!("{:?} ",basin_size.len());
-    println!("{:?} -> {}",basin_size.iter().take(3).collect::<Vec<_>>(), basin_size.iter().take(3).product::<usize>());
+
+    println!("part2: num basins = {:?} ", basin_size.len());
+    println!("part2: res = {:?} -> {}", basin_size.iter().take(3).collect::<Vec<_>>(), basin_size.iter().take(3).product::<usize>());
+}
+
+fn main() {
+    part1();
+    part2();
 }
