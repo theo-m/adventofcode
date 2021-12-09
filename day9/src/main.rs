@@ -1,4 +1,6 @@
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
+
+const CHARS: &str = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890πåß∂ƒ∆Ω≈ç√∫";
 
 fn neighbors(w: usize, h: usize, i: usize, j: usize) -> Vec<(usize, usize)> {
     [
@@ -11,7 +13,7 @@ fn neighbors(w: usize, h: usize, i: usize, j: usize) -> Vec<(usize, usize)> {
 }
 
 fn input() -> Vec<Vec<u8>> {
-    include_str!("../../inputs/day9.test.txt")
+    include_str!("../../inputs/day9.test2.txt")
         .lines()
         .map(|line|
             line.trim().split("")
@@ -46,30 +48,31 @@ fn part2() {
     let m = input();
     let (w, h) = (m.len(), m[0].len());
 
-    let mut basins = HashMap::new();
+    let mut ufind = HashMap::new();
     m.iter()
         .flatten()
         .enumerate()
         .filter_map(|(i, d)| if *d == 9 { None } else { Some((i / h, i % h)) })
         .for_each(|(x, y)| {
             let reprs = neighbors(w, h, x, y).iter()
-                .filter_map(|pos| basins.clone().get(pos).and_then(|n: &usize| Some((*pos, n.clone()))))
+                .filter_map(|pos| ufind.clone().get(pos).and_then(|n: &usize| Some((*pos, n.clone()))))
                 .collect::<Vec<((usize, usize), usize)>>();
 
             if reprs.is_empty() {
-                basins.insert((x, y), x * h + y);
+                ufind.insert((x, y), x * h + y);
             } else {
                 let (_, repr) = reprs[0];
-                reprs.iter().for_each(|(key, _)| { *basins.get_mut(key).unwrap() = repr; });
-                basins.insert((x, y), repr);
+                reprs.iter().for_each(|(key, _)| { *ufind.get_mut(key).unwrap() = repr; });
+                ufind.insert((x, y), repr);
             }
         });
 
-    let mut basin_size = basins.iter()
+    let basins_grouped = ufind.iter()
         .fold(HashMap::<usize, Vec<(usize, usize)>>::new(), |mut acc, (pos, repr)| {
             acc.entry(*repr).or_insert(vec![]).push(*pos);
             acc
-        }).iter()
+        });
+    let mut basin_size = basins_grouped.iter()
         .map(|(_repr, group)| group.len())
         .collect::<Vec<_>>();
     basin_size.sort();
@@ -77,6 +80,15 @@ fn part2() {
 
     println!("part2: num basins = {:?} ", basin_size.len());
     println!("part2: res = {:?} -> {}", basin_size.iter().take(3).collect::<Vec<_>>(), basin_size.iter().take(3).product::<usize>());
+    let cc = CHARS.chars().collect::<Vec<char>>();
+    println!("{}",
+             m.iter().enumerate()
+                 .map(|(i, seq)|
+                     seq.iter().enumerate()
+                         .map(|(j, h)|
+                             if *h == 9 { "■".to_string() } else { cc[ufind[&(i, j)] % cc.len()].to_string() })
+                         .fold(String::new(), |acc, v| acc + &v)
+                 ).fold(String::new(), |acc, v| acc + &v + "\n"));
 }
 
 fn main() {
