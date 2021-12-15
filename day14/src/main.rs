@@ -44,21 +44,14 @@ fn p2() {
     let mut bigrams = HashMap::<&'static str, usize>::from_iter(rules.iter().map(|(k, _)| (*k, 0)));
     (0..polymer.len() - 1).map(|i| &polymer[i..=i + 1]).for_each(|big| { *bigrams.entry(big).or_insert(0) += 1; });
 
+    let mut char_cnt = polymer.clone().chars().map(|c| (c, 1)).collect::<HashMap<char, usize>>();
     (0..40).for_each(|_| {
         let curr_bigrams = bigrams.clone();
         curr_bigrams.iter().for_each(|(k, curr)| {
+            char_cnt.entry(*rules[k].chars().collect::<Vec<_>>().first().unwrap()).and_modify(|mut c| *c += *curr).or_insert(*curr);
             let update_keys = rrules.get(k).unwrap();
             update_keys.iter().for_each(|k| { bigrams.entry(k).and_modify(|mut v| *v += *curr); });
         })
-    });
-    let char_cnt = bigrams.iter().fold(HashMap::new(), |mut acc, (k, v)| {
-        let keys: String = bigrams.clone().keys().into_iter().map(|k| *k).collect::<Vec<_>>().join("");
-        keys.
-        println!("{}", bigrams.clone().keys().into_iter().map(|k| *k).collect::<Vec<_>>().join(""));
-        println!("[{}]:{} {:?}", *k, *v, acc);
-        acc.entry(&k[0..1]).and_modify(|mut c| *c += *v).or_insert(*v);
-        acc.entry(&k[1..]).and_modify(|mut c| *c += *v).or_insert(*v);
-        acc
     });
     let mut cnt = char_cnt.values().collect::<Vec<_>>();
     cnt.sort();
