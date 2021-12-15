@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 fn input() -> (String, HashMap<&'static str, &'static str>) {
-    include_str!("../../inputs/day14.test.txt")
+    include_str!("../../inputs/day14.txt")
         .split_once("\n\n")
         .and_then(|(c, r)| Some((c.to_string(), r.lines().map(|line| {
             let mut it = line.split(" -> ");
@@ -44,19 +44,24 @@ fn p2() {
     let mut bigrams = HashMap::<&'static str, usize>::from_iter(rules.iter().map(|(k, _)| (*k, 0)));
     (0..polymer.len() - 1).map(|i| &polymer[i..=i + 1]).for_each(|big| { *bigrams.entry(big).or_insert(0) += 1; });
 
-    let mut char_cnt = polymer.clone().chars().map(|c| (c, 1)).collect::<HashMap<char, usize>>();
+    let mut char_cnt = polymer.clone().chars().fold(HashMap::new(), |mut acc, c| {
+        acc.entry(c).and_modify(|x| *x += 1).or_insert(1);
+        acc
+    });
     (0..40).for_each(|_| {
         let curr_bigrams = bigrams.clone();
         curr_bigrams.iter().for_each(|(k, curr)| {
-            char_cnt.entry(*rules[k].chars().collect::<Vec<_>>().first().unwrap()).and_modify(|mut c| *c += *curr).or_insert(*curr);
+            char_cnt.entry(*rules[k].chars().collect::<Vec<_>>().first().unwrap()).and_modify(|c| *c += *curr).or_insert(*curr);
+
             let update_keys = rrules.get(k).unwrap();
-            update_keys.iter().for_each(|k| { bigrams.entry(k).and_modify(|mut v| *v += *curr); });
+            update_keys.iter().for_each(|nk| { bigrams.entry(nk).and_modify(|v| *v += *curr).or_insert(*curr); });
+            bigrams.entry(k).and_modify(|v| *v -= *curr);
         })
     });
     let mut cnt = char_cnt.values().collect::<Vec<_>>();
     cnt.sort();
 
-    println!("p2: {:?}", char_cnt)
+    println!("p2: {:?}", cnt)
 }
 
 fn main() {
